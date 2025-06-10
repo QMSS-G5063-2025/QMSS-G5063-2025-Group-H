@@ -31,6 +31,10 @@ def run_bookbans():
         position: relative;
     }      
 
+    .stSelectbox div[data-baseweb="select"] > div {
+        color: white !important;
+    }
+                
     iframe[title="streamlit_folium.st_folium"] {
         height: 500px !important;
         max-height: 500px !important;
@@ -39,51 +43,49 @@ def run_bookbans():
     </style>
     """, unsafe_allow_html=True)
 
-    # Function to plot bans by year
     def plot_bans_by_year(df, year):
         df = df.copy()
-        df['year'] = pd.to_datetime(df['date'], errors='coerce').dt.year  # Isolate year
+        df['year'] = pd.to_datetime(df['date'], errors='coerce').dt.year
         filtered = df[df['year'] == year]
-        state_counts = filtered.groupby('state').size().reset_index(name='bans')
-        
-        # Get lat/lon info
-        state_coords_df = df[['state', 'lat', 'lon']].drop_duplicates()
-        state_counts = state_counts.merge(state_coords_df, on='state', how='left')
 
+        #  number of bans per state
+        state_counts = filtered.groupby('state').size().reset_index(name='bans')
+
+        # most banned titles per state
+        top_titles = (filtered.groupby(['state', 'title'])
+                            .size()
+                            .reset_index(name='count')
+                            .sort_values(['state', 'count'], ascending=[True, False]))
+
+        # top 3 per state
+        top_titles = top_titles.groupby('state').head(3)
+        top_titles_agg = (top_titles.groupby('state')['title']
+                                .apply(lambda x: ', '.join(x))
+                                .reset_index(name='top_titles'))
+
+        # merge lat/lon and titles
+        state_coords_df = df[['state', 'lat', 'lon']].drop_duplicates()
+        merged = state_counts.merge(state_coords_df, on='state', how='left')
+        merged = merged.merge(top_titles_agg, on='state', how='left')
+
+        #  map
         m = folium.Map(location=[39.5, -98.35], zoom_start=4)
-        for _, row in state_counts.dropna(subset=['lat', 'lon']).iterrows():
+        for _, row in merged.dropna(subset=['lat', 'lon']).iterrows():
+            popup_html = f"""
+            <strong>{row['state']}</strong><br>
+            📚 <b>{row['bans']} bans</b> in {year}<br>
+            🔥 Top titles: {row['top_titles']}
+            """
             folium.CircleMarker(
                 location=(row['lat'], row['lon']),
-                radius=row['bans']**0.5 / 2,
-                popup=f"{row['state']}: {row['bans']} bans in {year}",
+                radius=row['bans']**0.5 + 3,
+                popup=folium.Popup(popup_html, max_width=250),
                 color='crimson',
                 fill=True,
                 fill_opacity=0.6
             ).add_to(m)
 
         return m
-    
-    def plot_bans_by_month(df):
-        df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        df = df.dropna(subset=['date'])
-
-        df['year_month'] = df['date'].dt.to_period('M').dt.to_timestamp()
-
-        monthly_counts = df.groupby('year_month').size().reset_index(name='count')
-
-        # Create the chart
-        chart = alt.Chart(monthly_counts).mark_line(point=True).encode(
-            x=alt.X('year_month:T', title='Month',
-                    axis=alt.Axis(format='%b %Y', labelAngle=-45)),  # e.g., Nov 2021
-            y=alt.Y('count:Q', title='Number of Bans'),
-            tooltip=[alt.Tooltip('year_month:T', title='Month'), 'count']
-        ).properties(
-            title='Book Bans Over Time (by Month)',
-            width=700,
-            height=400
-        )
-
-        return chart
     
     def simplify_ban_status(status):
         status = str(status).lower()
@@ -133,37 +135,87 @@ def run_bookbans():
         top.columns = ['title', 'ban_count']
         return top
     
-    def show_top_books_grid(top_df, image_map):
-        st.markdown("### Top 10 Banned Books (2021–2023)")
-        cols = st.columns(5)  # two rows of up to 5
-        
+    def show_top_books_grid(top_df, image_map, link_map):
+        cols = st.columns(5)
+
         for idx, row in top_df.iterrows():
             col = cols[idx % 5]
             title = row['title']
             count = row['ban_count']
-            img = image_map.get(title)
+            img_url = image_map.get(title)
+            link_url = link_map.get(title, "#")
 
-            with col:
-                if img:
-                    st.image(img, use_column_width=True)
-                else:
+            if img_url:
+                with col:
+                    unique_id = f"book-{idx}"  # make ID unique per image
+                    st.markdown(f"""
+                    <style>
+                    #{unique_id} {{
+                        position: relative;
+                        width: 100%;
+                    }}
+                    #{unique_id} img {{
+                        width: 100%;
+                        border-radius: 6px;
+                    }}
+                    #{unique_id} .overlay {{
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.6);
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                        opacity: 0;
+                        border-radius: 6px;
+                        transition: opacity 0.3s ease;
+                        text-decoration: none;
+                    }}
+                    #{unique_id}:hover .overlay {{
+                        opacity: 1;
+                    }}
+                    </style>
+
+                    <div id="{unique_id}">
+                        <img src="{img_url}">
+                        <a href="{link_url}" target="_blank" class="overlay">
+                            WHY WAS THIS BOOK BANNED?
+                        </a>
+                    </div>
+                    <div style='text-align: center; font-size: 0.85em; margin-top: 4px;'>
+                        <strong>{title}</strong><br>Banned {count} time{'s' if count > 1 else ''}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                with col:
                     st.write("(No image)")
-                st.markdown(f"<div style='text-align: center; font-size: 0.85em;'>"
-                            f"<strong>{title}</strong><br>Banned {count} time{'s' if count > 1 else ''}"
-                            f"</div>", unsafe_allow_html=True)                
+                    st.markdown(f"<div style='text-align: center; font-size: 0.85em;'>"
+                                f"<strong>{title}</strong><br>Banned {count} time{'s' if count > 1 else ''}"
+                                f"</div>", unsafe_allow_html=True)
+                                
     # Start of Streamlit app
     st.markdown('<div class="plain-text">Book bans are a form of censorship that can have significant implications for free speech, intellectual freedom, and access to information. In the United States, book bans have been a contentious issue, with various states and school districts implementing restrictions on certain books in libraries and classrooms.</div>', unsafe_allow_html=True)
+    st.subheader("Book Bans from 2021-2024")
 
     # Load data
     data = load_data()
 
-    # Slider for year
-    year_to_filter = st.slider('Select Year', 2021, 2023, 2023)
+    # Dropdown
+    year_options = sorted(data['year'].dropna().astype(int).unique())
+    year_to_filter = st.selectbox('Select Year', year_options, index=len(year_options)-1)
 
     # Plot folium map
-    st.subheader(f"Book Bans in {year_to_filter}")
+    st.write(f"**Book Bans in {year_to_filter}**")
     folium_map = plot_bans_by_year(data, year_to_filter)
-    st_folium(folium_map, width=700, height=500)
+    col1, col2, col3 = st.columns([1, 6, 1])
+
+    with col2:
+        st_folium(folium_map, width=700, height=700)
 
     st.subheader("Bans Over Time")
     st.altair_chart(plot_bans_by_month_and_status(data), use_container_width=True)
@@ -181,8 +233,22 @@ def run_bookbans():
         "Me and Earl and the Dying Girl":"https://images.squarespace-cdn.com/content/v1/54b1d240e4b07e1baddc8c47/1429228428333-SMZ9WXTA8BFS9HQXFSY7/image-asset.jpeg",
     }
 
+    link_map = {
+        "Gender Queer: A Memoir": "https://d28hgpri8am2if.cloudfront.net/book_images/onix/cvr9781549304002/gender-queer-a-memoir-9781549304002_hr.jpg",
+        "The Bluest Eye": "https://m.media-amazon.com/images/I/81Qq9n7OtDL._AC_UF1000,1000_QL80_.jpg",
+        "The Perks of Being a Wallflower": "https://m.media-amazon.com/images/I/61KSi8OvgVL.jpg",
+        "All Boys Aren't Blue": "https://img.buzzfeed.com/buzzfeed-static/static/2022-06/27/15/asset/36241d3041bb/sub-buzz-826-1656343765-7.jpg?crop=2225:3176;48,16&downsize=900:*&output-format=auto&output-quality=auto",
+        "Sold":"https://m.media-amazon.com/images/I/61NiFw4L1YL._AC_UF1000,1000_QL80_.jpg",
+        "Looking for Alaska":"https://m.media-amazon.com/images/I/7127ZROAw5L.jpg",
+        "Nineteen Minutes":"https://m.media-amazon.com/images/I/818it868QJL.jpg",
+        "Thirteen Reasons Why":"https://m.media-amazon.com/images/I/51jViCo2wiL._AC_UF1000,1000_QL80_.jpg",
+        "Tricks":"https://www.marshall.edu/library/files/2023/08/tricks.jpg",
+        "Me and Earl and the Dying Girl":"https://images.squarespace-cdn.com/content/v1/54b1d240e4b07e1baddc8c47/1429228428333-SMZ9WXTA8BFS9HQXFSY7/image-asset.jpeg",
+    }
+
+    st.write("**Top Ten Banned Books from 2021 - 2024**")
     top10 = get_top_banned_books(data, n=10)
-    show_top_books_grid(top10, image_map)
+    show_top_books_grid(top10, image_map, link_map)
 
 # To run
 # run_bookbans()
