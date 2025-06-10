@@ -135,7 +135,7 @@ def run_bookbans():
         top.columns = ['title', 'ban_count']
         return top
     
-    def show_top_books_grid(top_df, image_map, link_map):
+    def show_top_books_grid(top_df, image_map, ban_reason_map):
         cols = st.columns(5)
 
         for idx, row in top_df.iterrows():
@@ -143,11 +143,12 @@ def run_bookbans():
             title = row['title']
             count = row['ban_count']
             img_url = image_map.get(title)
-            link_url = link_map.get(title, "#")
+            hover_text = ban_reason_map.get(title, "No reason available.")
 
             if img_url:
                 with col:
-                    unique_id = f"book-{idx}"  # make ID unique per image
+                    unique_id = f"book-{idx}"  # unique per image
+
                     st.markdown(f"""
                     <style>
                     #{unique_id} {{
@@ -174,7 +175,8 @@ def run_bookbans():
                         opacity: 0;
                         border-radius: 6px;
                         transition: opacity 0.3s ease;
-                        text-decoration: none;
+                        text-align: center;
+                        padding: 10px;
                     }}
                     #{unique_id}:hover .overlay {{
                         opacity: 1;
@@ -183,9 +185,7 @@ def run_bookbans():
 
                     <div id="{unique_id}">
                         <img src="{img_url}">
-                        <a href="{link_url}" target="_blank" class="overlay">
-                            WHY WAS THIS BOOK BANNED?
-                        </a>
+                        <div class="overlay">{hover_text}</div>
                     </div>
                     <div style='text-align: center; font-size: 0.85em; margin-top: 4px;'>
                         <strong>{title}</strong><br>Banned {count} time{'s' if count > 1 else ''}
@@ -233,7 +233,7 @@ def run_bookbans():
         "Me and Earl and the Dying Girl":"https://images.squarespace-cdn.com/content/v1/54b1d240e4b07e1baddc8c47/1429228428333-SMZ9WXTA8BFS9HQXFSY7/image-asset.jpeg",
     }
 
-    link_map = {
+    ban_reason_map = {
         "Gender Queer: A Memoir": "https://d28hgpri8am2if.cloudfront.net/book_images/onix/cvr9781549304002/gender-queer-a-memoir-9781549304002_hr.jpg",
         "The Bluest Eye": "https://m.media-amazon.com/images/I/81Qq9n7OtDL._AC_UF1000,1000_QL80_.jpg",
         "The Perks of Being a Wallflower": "https://m.media-amazon.com/images/I/61KSi8OvgVL.jpg",
@@ -248,7 +248,7 @@ def run_bookbans():
 
     st.write("**Top Ten Banned Books from 2021 - 2024**")
     top10 = get_top_banned_books(data, n=10)
-    show_top_books_grid(top10, image_map, link_map)
+    show_top_books_grid(top10, image_map, ban_reason_map)
 
 # To run
 # run_bookbans()
