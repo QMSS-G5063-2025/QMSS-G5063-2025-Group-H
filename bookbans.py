@@ -217,8 +217,8 @@ def run_bookbans():
     with col2:
         st_folium(folium_map, width=700, height=700)
 
-    st.subheader("Bans Over Time")
-    st.altair_chart(plot_bans_by_month_and_status(data), use_container_width=True)
+   # st.subheader("Bans Over Time")
+  #  st.altair_chart(plot_bans_by_month_and_status(data), use_container_width=True)
 
     image_map = {
         "Gender Queer: A Memoir": "https://d28hgpri8am2if.cloudfront.net/book_images/onix/cvr9781549304002/gender-queer-a-memoir-9781549304002_hr.jpg",
@@ -246,9 +246,9 @@ def run_bookbans():
         "Me and Earl and the Dying Girl":"https://images.squarespace-cdn.com/content/v1/54b1d240e4b07e1baddc8c47/1429228428333-SMZ9WXTA8BFS9HQXFSY7/image-asset.jpeg",
     }
 
-    st.write("**Top Ten Banned Books from 2021 - 2024**")
-    top10 = get_top_banned_books(data, n=10)
-    show_top_books_grid(top10, image_map, ban_reason_map)
+   # st.write("**Top Ten Banned Books from 2021 - 2024**")
+  #  top10 = get_top_banned_books(data, n=10)
+   # show_top_books_grid(top10, image_map, ban_reason_map)
 
 # To run
 # run_bookbans()
