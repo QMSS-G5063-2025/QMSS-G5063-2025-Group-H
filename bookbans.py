@@ -111,7 +111,7 @@ def run_bookbans():
             # Plot
             chart = alt.Chart(grouped).mark_area(opacity=0.7).encode(
                 x=alt.X('year_month:T', title='Month', axis=alt.Axis(format='%b %Y', labelAngle=-45)),
-                y=alt.Y('count:Q', title='Number of Bans', stack='zero'),
+                y=alt.Y('count:Q', title='Number of Bans Filed', stack='zero'),
                 color=alt.Color('ban status:N', title='Ban Status',
                     scale=alt.Scale(domain=["banned", "banned pending investigation"]),
                     legend=alt.Legend(labelLimit=200)
@@ -119,10 +119,10 @@ def run_bookbans():
                 tooltip=[
                     alt.Tooltip('year_month:T', title='Month'),
                     alt.Tooltip('ban status:N', title='Ban Status'),
-                    alt.Tooltip('count:Q', title='Number of Bans')
+                    alt.Tooltip('count:Q', title='Number of Bans Filed')
                 ]
             ).properties(
-                title='Book Bans Over Time',
+                title='Book Bans Filed Over Time',
                 width=700,
                 height=400
             )
@@ -229,8 +229,16 @@ def run_bookbans():
     with col2:
         st_folium(folium_map, width=700, height=700)
 
-    st.subheader("Bans Over Time")
+    st.markdown('')
+    st.markdown('<div class="plain-text">This map illustrates the geographic spread and intensity of book bans across the U.S. from 2021 to 2024. Each circle represents a state, with size corresponding to the number of bans—highlighting how censorship efforts have been concentrated in certain regions, particularly the Midwest and South. </div>', unsafe_allow_html=True)
+    st.markdown('')
+
+    st.subheader("Book Bans & Challenges Over Time")
     st.altair_chart(plot_bans_by_month_and_status(data), use_container_width=True)
+
+    st.markdown('')
+    st.markdown('<div class="plain-text">The chart shows clear spikes in book bans during the fall—coinciding with the start of the school year—suggesting that many removals are tied to curriculum reviews and policy shifts in educational settings. Overall, the trend points to a steady increase in book bans each year, with the most dramatic rise occurring in 2024. This pattern indicates growing momentum behind censorship efforts in schools. </div>', unsafe_allow_html=True)
+    st.markdown('')
 
     image_map = {
             "Gender Queer: A Memoir": "https://d28hgpri8am2if.cloudfront.net/book_images/onix/cvr9781549304002/gender-queer-a-memoir-9781549304002_hr.jpg",
@@ -263,4 +271,8 @@ def run_bookbans():
     st.write("**Top Ten Banned Books from 2021 - 2024**")
     top10 = get_top_banned_books(data, n=11) #11 because of a tie
     show_top_books_grid(top10, image_map, ban_reason_map)
+    
+    st.markdown('')
+    st.markdown('<div class="plain-text">An analysis of the most frequently banned books from 2021 to 2024 reveals clear patterns in the types of narratives being challenged. Over 60% of the top titles, including Gender Queer and All Boys Aren’t Blue, center LGBTQ+ characters, while more than half, such as The Bluest Eye and The Kite Runner, address racial identity or trauma. At least 8 of the 11 most-banned books were flagged as “sexually explicit,” a designation often applied to depictions of abuse, coming-of-age experiences, or trauma-informed storytelling. These findings suggest that bans disproportionately target books that amplify marginalized voices and confront difficult social issues, rather than those that merely contain explicit material.</div>', unsafe_allow_html=True)
+    st.markdown('')
 
