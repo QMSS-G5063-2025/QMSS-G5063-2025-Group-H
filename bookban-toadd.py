@@ -4,47 +4,6 @@ import folium
 from streamlit_folium import st_folium
 import altair as alt
 import re
-
-def simplify_ban_status(status):
-        status = str(status).lower()
-        status = re.sub(r'\b(from|in)\b', '', status)  # remove noise words
-        status = re.sub(r'\s+', ' ', status).strip()   # collapse extra spaces
-        return "banned pending investigation" if status == "banned pending investigation" else "banned"
-
-def plot_bans_by_month_and_status(df):
-        # Parse and clean date
-        df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        df = df.dropna(subset=['date'])
-
-        # Simplify ban status into 2 categories
-        df['ban status'] = df['ban status'].fillna("unknown").apply(simplify_ban_status)
-
-        # Year-month grouping
-        df['year_month'] = df['date'].dt.to_period('M').dt.to_timestamp()
-
-        # Grouped counts
-        grouped = df.groupby(['year_month', 'ban status']).size().reset_index(name='count')
-
-        # Plot
-        chart = alt.Chart(grouped).mark_area(opacity=0.7).encode(
-            x=alt.X('year_month:T', title='Month', axis=alt.Axis(format='%b %Y', labelAngle=-45)),
-            y=alt.Y('count:Q', title='Number of Bans', stack='zero'),
-            color=alt.Color('ban status:N', title='Ban Status',
-                scale=alt.Scale(domain=["banned", "banned pending investigation"]),
-                legend=alt.Legend(labelLimit=200)
-            ),
-            tooltip=[
-                alt.Tooltip('year_month:T', title='Month'),
-                alt.Tooltip('ban status:N', title='Ban Status'),
-                alt.Tooltip('count:Q', title='Number of Bans')
-            ]
-        ).properties(
-            title='Book Bans Over Time',
-            width=700,
-            height=400
-        )
-
-        return chart
     
 def get_top_banned_books(df, n=10):
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
@@ -119,8 +78,6 @@ def show_top_books_grid(top_df, image_map, ban_reason_map):
 
 
 
-   # st.subheader("Bans Over Time")
-  #  st.altair_chart(plot_bans_by_month_and_status(data), use_container_width=True)
 
 image_map = {
         "Gender Queer: A Memoir": "https://d28hgpri8am2if.cloudfront.net/book_images/onix/cvr9781549304002/gender-queer-a-memoir-9781549304002_hr.jpg",

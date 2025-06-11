@@ -3,6 +3,8 @@ def run_bookbans():
     import pandas as pd
     import folium
     from streamlit_folium import st_folium
+    import altair as alt
+    import re
 
     # Fix: @st.cache_data needs to decorate a function
     @st.cache_data
@@ -28,19 +30,21 @@ def run_bookbans():
         opacity: 0;
         position: relative;
     }      
+                
+     
+    .stSelectbox div[data-baseweb="select"] > div {
+        color: white !important;
+    }
+                
+    iframe[title="streamlit_folium.st_folium"] {
+        height: 500px !important;
+        max-height: 500px !important;
+    }
                                 
     </style>
     """, unsafe_allow_html=True)
 
-    #
-    #    .stSelectbox div[data-baseweb="select"] > div {
-   #     color: white !important;
-   # }
-                
-   # iframe[title="streamlit_folium.st_folium"] {
-   #     height: 500px !important;
-   #     max-height: 500px !important;
-   # }
+
 
     def plot_bans_by_year(df, year):
         df = df.copy()
@@ -85,7 +89,49 @@ def run_bookbans():
             ).add_to(m)
 
         return m
-                                
+    
+
+    def simplify_ban_status(status):
+            status = str(status).lower()
+            status = re.sub(r'\b(from|in)\b', '', status)  # remove noise words
+            status = re.sub(r'\s+', ' ', status).strip()   # collapse extra spaces
+            return "banned pending investigation" if status == "banned pending investigation" else "banned"
+
+    def plot_bans_by_month_and_status(df):
+            # Parse and clean date
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
+            df = df.dropna(subset=['date'])
+
+            # Simplify ban status into 2 categories
+            df['ban status'] = df['ban status'].fillna("unknown").apply(simplify_ban_status)
+
+            # Year-month grouping
+            df['year_month'] = df['date'].dt.to_period('M').dt.to_timestamp()
+
+            # Grouped counts
+            grouped = df.groupby(['year_month', 'ban status']).size().reset_index(name='count')
+
+            # Plot
+            chart = alt.Chart(grouped).mark_area(opacity=0.7).encode(
+                x=alt.X('year_month:T', title='Month', axis=alt.Axis(format='%b %Y', labelAngle=-45)),
+                y=alt.Y('count:Q', title='Number of Bans', stack='zero'),
+                color=alt.Color('ban status:N', title='Ban Status',
+                    scale=alt.Scale(domain=["banned", "banned pending investigation"]),
+                    legend=alt.Legend(labelLimit=200)
+                ),
+                tooltip=[
+                    alt.Tooltip('year_month:T', title='Month'),
+                    alt.Tooltip('ban status:N', title='Ban Status'),
+                    alt.Tooltip('count:Q', title='Number of Bans')
+                ]
+            ).properties(
+                title='Book Bans Over Time',
+                width=700,
+                height=400
+            )
+
+            return chart
+                                    
     # Start of Streamlit app
     st.markdown('<div class="plain-text">Book bans are a form of censorship that can have significant implications for free speech, intellectual freedom, and access to information. In the United States, book bans have been a contentious issue, with various states and school districts implementing restrictions on certain books in libraries and classrooms.</div>', unsafe_allow_html=True)
     st.subheader("Book Bans from 2021-2024")
@@ -104,6 +150,9 @@ def run_bookbans():
 
     with col2:
         st_folium(folium_map, width=700, height=700)
+
+    st.subheader("Bans Over Time")
+    st.altair_chart(plot_bans_by_month_and_status(data), use_container_width=True)
 
 # To run
 # run_bookbans()
