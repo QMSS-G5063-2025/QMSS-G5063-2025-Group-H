@@ -75,7 +75,7 @@ def run_bookbans():
             popup_html = f"""
             <strong>{row['state']}</strong><br>
             📚 <b>{row['bans']} bans</b> in {year}<br>
-            🔥 Top titles: {row['top_titles']}
+            Most Banned Titles: {row['top_titles']}
             """
             folium.CircleMarker(
                 location=(row['lat'], row['lon']),
@@ -247,17 +247,17 @@ def run_bookbans():
         }
 
     ban_reason_map = {
-            "Gender Queer: A Memoir": "This book has been banned in more states than any other book as part of the pushback against LGBTQ+ topics in schools for covering topics relevant to the transgender experience. <a href='https://www.nytimes.com/2022/05/01/books/maia-kobabe-gender-queer-book-ban.html' target='_blank' style='color:#add8e6;'>Read more</a>.",
-            "The Bluest Eye": "https://m.media-amazon.com/images/I/81Qq9n7OtDL._AC_UF1000,1000_QL80_.jpg",
-            "The Perks of Being a Wallflower": "https://m.media-amazon.com/images/I/61KSi8OvgVL.jpg",
-            "All Boys Aren't Blue": "https://img.buzzfeed.com/buzzfeed-static/static/2022-06/27/15/asset/36241d3041bb/sub-buzz-826-1656343765-7.jpg?crop=2225:3176;48,16&downsize=900:*&output-format=auto&output-quality=auto",
-            "Sold":"https://m.media-amazon.com/images/I/61NiFw4L1YL._AC_UF1000,1000_QL80_.jpg",
-            "Looking for Alaska":"https://m.media-amazon.com/images/I/7127ZROAw5L.jpg",
-            "Nineteen Minutes":"https://m.media-amazon.com/images/I/818it868QJL.jpg",
-            "Thirteen Reasons Why":"https://m.media-amazon.com/images/I/51jViCo2wiL._AC_UF1000,1000_QL80_.jpg",
-            "Tricks":"https://www.marshall.edu/library/files/2023/08/tricks.jpg",
-            "The Kite Runner":"https://images.squarespace-cdn.com/content/v1/54b1d240e4b07e1baddc8c47/1429228428333-SMZ9WXTA8BFS9HQXFSY7/image-asset.jpeg",
-            "Me and Earl and the Dying Girl": "https://images.squarespace-cdn.com/content/v1/54b1d240e4b07e1baddc8c47/1429279129732-KW0LZC6JT3ZDWJ1SU68Y/image-asset.jpeg",
+            "Gender Queer: A Memoir": "This book has been banned in more states than any other book. Gender Queer covers topics relevant to the transgender experience. <a href='https://www.nytimes.com/2022/05/01/books/maia-kobabe-gender-queer-book-ban.html' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "The Bluest Eye": "The Bluest Eye has been banned for its themes of sexual abuse, racism, and slavery. <a href='https://www.nypl.org/events/exhibitions/galleries/literature-and-film/item/17353' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "The Perks of Being a Wallflower": "This book has been banned for containing things such as LGBTQ themes, explicit sexual references, and drug use. <a href='https://www.marshall.edu/library/bannedbooks/the-perks-of-being-a-wallflower/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "All Boys Aren't Blue": "All Boys Aren't Blue, a book about being Black and queer, has been banned due to its LGBTQ content. <a href='https://www.npr.org/2022/10/25/1130433140/banned-books-all-boys-arent-blue-george-johnson-lgbtq-ya' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "Sold":"This book has been banned for its sexually explicit content and mentions of sexual violence. <a href='https://www.marshall.edu/library/bannedbooks/sold/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "Looking for Alaska":"This book has been banned for its depiction of LGBTQ teenagers and sexual content. <a href='https://www.marshall.edu/library/bannedbooks/looking-for-alaska/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "Nineteen Minutes":"While it details a violent school shooting, this book has been banned for sexual content. <a href='https://pen.org/press-release/nearly-200-percent-surge-in-school-book-bans-during-2023-2024-school-year/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "Thirteen Reasons Why":"This book has been banned for its themes of teen suicide and its mentions of drugs, alcohol, and sex. <a href='https://www.marshall.edu/library/bannedbooks/thirteen-reasons-why/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "Tricks":"Tricks has been banned for being sexually explicit and having LGBTQIA+ content. <a href='https://www.marshall.edu/library/bannedbooks/tricks/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "The Kite Runner":"The Kite runner has been banned for its discussion of sexual violence. <a href='https://www.marshall.edu/library/bannedbooks/kite-runner/' target='_blank' style='color:#add8e6;'>Read more</a>.",
+            "Me and Earl and the Dying Girl": "This book has been banned for its sexual content and language. <a href='https://www.marshall.edu/library/bannedbooks/me-and-earl-and-the-dying-girl/' target='_blank' style='color:#add8e6;'>Read more</a>.",
         }
 
     st.write("**Top Ten Banned Books from 2021 - 2024**")
