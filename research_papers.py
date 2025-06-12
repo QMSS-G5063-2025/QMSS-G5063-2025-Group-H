@@ -82,14 +82,16 @@ def run():
     st.markdown('<div class="plain-text">Recently, restrictions on scientific research and scholarship in the U.S. have been imposed through multiple executive orders. Billions of dollars allocated for research have been frozen, and topics such as climate change and gender continue to be targeted and censored. </div>', unsafe_allow_html=True)
     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
-    st.markdown('<div class="plain-text">We look at what could happen if research papers dealing with \"flagged\" topics were removed. </div>', unsafe_allow_html=True)
+    st.markdown('<div class="plain-text"> <a href="https://www.pbs.org/newshour/health/what-happens-to-health-research-when-women-and-diversity-are-banned-words" target="_blank" style="color:inherit;">Reports</a> suggest that research grants with certain words are not considered for funding. We look at what could happen if research papers dealing with \"flagged\" topics were removed. </div>', unsafe_allow_html=True)
     percent_banned = df['contains_banned'].mean() * 1000 / 488 * 100; #there are 488 available abstracts
     percent_text = f"""{percent_banned:.2f}% contained recent \"flagged words\" as listed by the <a href="https://www.nytimes.com/interactive/2025/03/07/us/trump-federal-agencies-websites-words-dei.html" target="_blank" style="color: inherit; text-decoration: underline;">New York Times</a>."""
     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
     st.markdown('<div class="plain-text">Out of 488 randomly selected abstracts from the <a href="https://aclanthology.org/2020.acl-main.447" target="_blank" style="color: inherit; text-decoration: underline;">Semantic Scholar Open Research Corpus</a></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="plain-text">{percent_text}</div>', unsafe_allow_html=True)
-
+    st.markdown('')
+    st.markdown('')
+    
     # WORD CLOUD
     def red_color_func(*args, **kwargs):
         return "hsl(0, 100%%, %d%%)" % random.randint(30, 70)
